@@ -1,0 +1,34 @@
+{
+  "package": "@przeprogramowani/10x-cli",
+  "version": "1.11.0",
+  "manifestVersion": 3,
+  "lastApplied": "2026-07-31T18:11:20.500Z",
+  "lessonId": "m5l5",
+  "course": "10xdevs3",
+  "tool": "codex",
+  "files": {
+    "skills": {
+      "10x-goal-implement": {
+        "files": ["SKILL.md"],
+        "contentHashes": {
+          "SKILL.md": "d094d1156837a754db5c905ed33447912236e7d69ee85ca05745a97958240c73"
+        }
+      }
+    },
+    "prompts": [],
+    "configs": [],
+    "promptHashes": {}
+  },
+  "lessons": {
+    "m5l5": {
+      "appliedAt": "2026-07-31T18:11:20.500Z",
+      "skills": {
+        "10x-goal-implement": {
+          "files": ["SKILL.md"]
+        }
+      },
+      "prompts": [],
+      "configs": []
+    }
+  }
+}

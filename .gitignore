@@ -21,6 +21,12 @@ pnpm-debug.log*
 .dev.vars
 .wrangler/
 
+# test artifacts and authenticated browser state
+playwright/.auth/
+playwright-report/
+test-results/
+coverage/
+
 # macOS-specific files
 .DS_Store
 

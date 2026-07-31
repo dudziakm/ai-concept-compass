@@ -1,175 +1,154 @@
-# 10x Astro Starter
+# AI Concept Compass
 
-![](./public/template.png)
+Polskojęzyczna aplikacja do kalibracji wiedzy przed AWS Certified AI
+Practitioner. Użytkownik deklaruje pewność, odpowiada własnymi słowami, porównuje
+odpowiedź ze wzorcem i otrzymuje deterministyczną rekomendację kolejnego tematu.
 
-A modern, opinionated starter template for building fast, accessible web applications.
+MVP celowo nie używa LLM. Jego wartość — wykrywanie luk mastery i nadmiernej
+pewności — działa przewidywalnie, tanio i jest w pełni testowalna.
 
-## Tech Stack
+## Najważniejszy przepływ
 
-- [Astro](https://astro.build/) v6 - Modern web framework with server-first rendering
-- [React](https://react.dev/) v19 - UI library for interactive components
-- [TypeScript](https://www.typescriptlang.org/) v5 - Type-safe JavaScript
-- [Tailwind CSS](https://tailwindcss.com/) v4 - Utility-first CSS framework
-- [Supabase](https://supabase.com/) - Authentication and backend-as-a-service
-- [Cloudflare Workers](https://workers.cloudflare.com/) - Edge deployment runtime
-
-## Prerequisites
-
-- Node.js v22.14.0 (as specified in `.nvmrc`)
-- npm (comes with Node.js)
-
-## Getting Started
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/przeprogramowani/10x-astro-starter.git
-cd 10x-astro-starter
+```text
+logowanie → pakiet 10 pojęć → pewność 1–5 → odpowiedź
+→ samoocena wyniku → mastery + luka kalibracji → rekomendacja
 ```
 
-2. Install dependencies:
+Pakiet jest autorski i oparty na oficjalnym [AWS Certified AI Practitioner
+Exam Guide](https://docs.aws.amazon.com/aws-certification/latest/ai-practitioner-01/ai-practitioner-01.html)
+dla blueprintu AIF-C01 v1.1. Repozytorium nie zawiera skopiowanych pytań
+egzaminacyjnych.
+
+## Stack
+
+- Astro 6 SSR, React 19, TypeScript i Tailwind CSS 4;
+- hosted Supabase: PostgreSQL, Auth i Row Level Security;
+- Cloudflare Workers;
+- Zod 4, Vitest 4 i Playwright;
+- GitHub Actions na Node 22.14.
+
+```mermaid
+flowchart LR
+  B[Astro + React] -->|anon key + sesja| S[Supabase Auth]
+  B --> A[Astro API routes]
+  A -->|JWT użytkownika| P[(PostgreSQL + RLS)]
+  A --> D[Deterministyczny scoring]
+  D --> B
+```
+
+Klucz `service_role` nie jest używany przez aplikację. Każdy zapis przekazuje
+`user_id` zalogowanego użytkownika, a baza niezależnie wymusza ten sam warunek
+przez RLS.
+
+## Logika rekomendacji
+
+- wynik: incorrect `0`, partial `50`, correct `100`;
+- pewność: `(confidence - 1) × 25`;
+- mastery: pierwszy wynik albo `0.6 × poprzednie + 0.4 × wynik`;
+- nadmierna pewność: `max(0, pewność - wynik)`;
+- powtórka: `+1`, `+3`, `+7`, a po dwóch poprawnych `+14` dni;
+- priority: 70% luki mastery + 30% nadmiernej pewności + do 20 punktów
+  przeterminowania, zawsze w zakresie 0–100;
+- nowe pojęcie ma priorytet 100; terminy wymagające powtórki wygrywają przed
+  samym wynikiem priority.
+
+`now` jest przekazywane do funkcji domenowych, dzięki czemu testy nie zależą od
+zegara systemowego.
+
+## API
+
+| Metoda               | Endpoint                    | Cel                               |
+| -------------------- | --------------------------- | --------------------------------- |
+| GET / POST           | `/api/concepts`             | lista i tworzenie pojęć           |
+| GET / PATCH / DELETE | `/api/concepts/:id`         | odczyt, edycja i usunięcie        |
+| POST                 | `/api/concepts/:id/reviews` | zapis oceny i scoring             |
+| POST                 | `/api/starter-pack`         | idempotentne dodanie 10 szablonów |
+| GET                  | `/api/dashboard`            | postęp domen i rekomendacja       |
+
+Zapisy są walidowane przez Zod. Błędy mają wspólny format JSON i statusy
+400/401/404/409/500.
+
+## Uruchomienie
+
+Wymagany jest Node 22.14 (`.nvmrc`) oraz projekt Supabase.
 
 ```bash
 npm install
-```
-
-3. Set up Supabase and configure environment variables — see [Supabase Configuration](#supabase-configuration) below.
-
-4. Create a `.dev.vars` file for local Cloudflare dev secrets:
-
-```bash
-cp .env.example .dev.vars
-```
-
-5. Run the development server:
-
-```bash
-npm run dev
-```
-
-## Available Scripts
-
-- `npm run dev` - Start development server (Cloudflare workerd runtime)
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-- `npm run lint` - Run ESLint with type-checked rules
-- `npm run lint:fix` - Auto-fix ESLint issues
-- `npm run format` - Run Prettier
-
-## Project Structure
-
-```md
-.
-├── src/
-│ ├── layouts/ # Astro layouts
-│ ├── pages/ # Astro pages
-│ │ └── api/ # API endpoints
-│ ├── components/ # UI components (Astro & React)
-│ └── assets/ # Static assets
-├── public/ # Public assets
-├── wrangler.jsonc # Cloudflare Workers config
-```
-
-## Supabase Configuration
-
-This project uses [Supabase](https://supabase.com/) for authentication. Environment variables are declared via Astro's `astro:env` schema and are treated as **server-only secrets** — they are never exposed to the client.
-
-### First-time setup (local, no cloud project needed)
-
-Requires [Docker](https://www.docker.com/) and ~7 GB RAM.
-
-1. Create your `.env` file:
-
-```bash
 cp .env.example .env
 ```
 
-2. Initialize the local Supabase project (creates a `supabase/` config folder):
+W `.env` ustaw `SUPABASE_URL` i publiczny klucz anon/publishable
+`SUPABASE_KEY`. Następnie połącz projekt i zastosuj migrację:
 
 ```bash
-npx supabase init
+npx supabase login
+npx supabase link --project-ref <project-ref>
+npx supabase db push
+npm run dev
 ```
 
-3. Start the local stack (downloads Docker images on first run):
+Migracja `supabase/migrations/20260731190000_ai_concept_compass.sql` tworzy
+tabele, polityki RLS, indeksy i pakiet 10 szablonów. Logowanie do Supabase jest
+czynnością użytkownika; sekret dostępu nie trafia do repozytorium.
+
+## Testy i bramki
 
 ```bash
-npx supabase start
-```
-
-4. Copy the credentials printed by the CLI into your `.env` and `.dev.vars`:
-
-```
-SUPABASE_URL=http://127.0.0.1:54321
-SUPABASE_KEY=<anon key from CLI output>
-```
-
-5. To stop the stack when done:
-
-```bash
-npx supabase stop
-```
-
-The local Studio UI is available at `http://localhost:54323`.
-
-No database tables or migrations are required — this project uses Supabase Auth's built-in `auth.users` table only.
-
-### Using a cloud Supabase project instead
-
-If you prefer to use a hosted Supabase project, add these variables to your `.env` and `.dev.vars` files:
-
-| Variable       | Description                                                |
-| -------------- | ---------------------------------------------------------- |
-| `SUPABASE_URL` | Project URL from Supabase dashboard → Settings → API       |
-| `SUPABASE_KEY` | `anon` public key from Supabase dashboard → Settings → API |
-
-```
-SUPABASE_URL=https://<project-ref>.supabase.co
-SUPABASE_KEY=<anon-key>
-```
-
-### Email confirmation in local development
-
-By default Supabase requires email confirmation before a user can sign in. To skip this during local development:
-
-1. Open the Supabase dashboard for your project
-2. Go to **Authentication → Email → Confirm email**
-3. Toggle it **off**
-
-Users can then sign in immediately after sign-up without clicking a confirmation link.
-
-### Auth routes
-
-| Route                 | Description                                                             |
-| --------------------- | ----------------------------------------------------------------------- |
-| `/auth/signin`        | Email/password sign-in form                                             |
-| `/auth/signup`        | Email/password sign-up form                                             |
-| `/auth/confirm-email` | Post-signup "check your inbox" page                                     |
-| `/dashboard`          | Example protected page (redirects to `/auth/signin` if unauthenticated) |
-
-Route protection is handled in `src/middleware.ts`. Add paths to the `PROTECTED_ROUTES` array there to require authentication.
-
-## Deployment
-
-This project deploys to [Cloudflare Workers](https://workers.cloudflare.com/).
-
-1. Build the project:
-
-```bash
+npm run lint
+npm run typecheck
+npm run test:coverage
 npm run build
 ```
 
-2. Deploy with Wrangler:
+Lokalny pakiet ma 42 testy i 100% pokrycia instrukcji, funkcji, linii oraz
+gałęzi silnika scoringu. Test kontraktu migracji sprawdza RLS, cascade i
+idempotencję.
+
+E2E wymaga potwierdzonego konta testowego oraz zmiennych
+`E2E_USER_EMAIL`/`E2E_USER_PASSWORD`:
 
 ```bash
+npx playwright install chromium
+npm run test:e2e
+```
+
+Setup Playwright loguje konto raz do `storageState` i czyści jego dane. Główny
+scenariusz przechodzi przez prawdziwe auth, routing, API i bazę: pakiet → edycja
+→ review → rekomendacja → usunięcie. Artefakty uwierzytelnienia są ignorowane
+przez Git.
+
+CI wymaga czterech sekretów repozytorium: `SUPABASE_URL`, `SUPABASE_KEY`,
+`E2E_USER_EMAIL`, `E2E_USER_PASSWORD`. Oba joby — quality i E2E — są bramkami
+merge.
+
+## Wdrożenie na Cloudflare Workers
+
+Po zalogowaniu do Cloudflare ustaw dwa sekrety i wdroż aplikację:
+
+```bash
+npx wrangler login
+npx wrangler secret put SUPABASE_URL
+npx wrangler secret put SUPABASE_KEY
 npx wrangler deploy
 ```
 
-Set `SUPABASE_URL` and `SUPABASE_KEY` as secrets in your Cloudflare dashboard or via `npx wrangler secret put`.
+Dodaj publiczny URL do listy dozwolonych redirect URL w Supabase Auth.
 
-## CI
+## Dokumentacja procesu
 
-GitHub Actions runs lint + build on every push and PR to `master`. Configure `SUPABASE_URL` and `SUPABASE_KEY` as repository secrets in GitHub for the build step.
+- [Shape notes](context/foundation/shape-notes.md)
+- [PRD](context/foundation/prd.md)
+- [Tech stack](context/foundation/tech-stack.md)
+- [Test plan](context/testing/test-plan.md)
+- [Audyt MVP](context/evidence/builder-mvp-check.md)
 
-## License
+## Jak AI wspierało proces
+
+Codex pomógł rozbić zakres na testowalne granice, przygotować migrację, API,
+interfejs i testy oraz wykonywał każdą bramkę jakości. Reguły biznesowe, zakres
+MVP, źródło treści i kryteria akceptacji pozostają jawne w repozytorium, zamiast
+być ukryte w promptach lub wyniku modelu.
+
+## Licencja
 
 MIT
