@@ -11,7 +11,9 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:rls": "node scripts/require-rls-env.mjs && vitest run tests/rls.integration.test.ts",
     "test:e2e": "playwright test",
+    "workflow:check": "node scripts/verify-workflow-artifacts.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write ."

@@ -7,6 +7,11 @@ odpowiedź ze wzorcem i otrzymuje deterministyczną rekomendację kolejnego tema
 MVP celowo nie używa LLM. Jego wartość — wykrywanie luk mastery i nadmiernej
 pewności — działa przewidywalnie, tanio i jest w pełni testowalna.
 
+> **Stan 31 lipca 2026:** aplikacja i pełny przepływ są zaimplementowane oraz
+> przechodzą lokalne bramki bez sekretów. Publiczny deploy, hosted E2E i runtime
+> RLS są celowo oznaczone jako oczekujące — wymagają projektu Supabase, dwóch
+> kont testowych i dostępu Cloudflare. Repo nie udaje zaliczenia tych kroków.
+
 ## Najważniejszy przepływ
 
 ```text
@@ -100,9 +105,10 @@ npm run test:coverage
 npm run build
 ```
 
-Lokalny pakiet ma 42 testy i 100% pokrycia instrukcji, funkcji, linii oraz
-gałęzi silnika scoringu. Test kontraktu migracji sprawdza RLS, cascade i
-idempotencję.
+Lokalny pakiet ma testy scoringu, schematów, migracji oraz tras API i 100%
+pokrycia instrukcji, funkcji, linii oraz gałęzi silnika scoringu. Statyczny test
+migracji sprawdza RLS, cascade i idempotencję; osobny hosted harness wykonuje
+rzeczywistą macierz dwóch użytkowników.
 
 E2E wymaga potwierdzonego konta testowego oraz zmiennych
 `E2E_USER_EMAIL`/`E2E_USER_PASSWORD`:
@@ -115,11 +121,22 @@ npm run test:e2e
 Setup Playwright loguje konto raz do `storageState` i czyści jego dane. Główny
 scenariusz przechodzi przez prawdziwe auth, routing, API i bazę: pakiet → edycja
 → review → rekomendacja → usunięcie. Artefakty uwierzytelnienia są ignorowane
-przez Git.
+przez Git. Sama trasa rejestracji ma test integracyjny; pełna rejestracja z
+potwierdzeniem e-mail pozostaje manualnym testem hosted, ponieważ zależy od
+zewnętrznego dostawcy poczty.
 
-CI wymaga czterech sekretów repozytorium: `SUPABASE_URL`, `SUPABASE_KEY`,
-`E2E_USER_EMAIL`, `E2E_USER_PASSWORD`. Oba joby — quality i E2E — są bramkami
-merge.
+Test RLS wymaga dwóch potwierdzonych zwykłych kont i świadomie nie używa
+`service_role`:
+
+```bash
+SUPABASE_URL=... SUPABASE_KEY=... \
+RLS_USER_A_EMAIL=... RLS_USER_A_PASSWORD=... \
+RLS_USER_B_EMAIL=... RLS_USER_B_PASSWORD=... npm run test:rls
+```
+
+CI wymaga czterech sekretów E2E (`SUPABASE_URL`, `SUPABASE_KEY`,
+`E2E_USER_EMAIL`, `E2E_USER_PASSWORD`) oraz danych dwóch kont `RLS_USER_A_*` i
+`RLS_USER_B_*`. Quality, E2E i RLS są osobnymi bramkami merge.
 
 ## Wdrożenie na Cloudflare Workers
 
@@ -138,9 +155,19 @@ Dodaj publiczny URL do listy dozwolonych redirect URL w Supabase Auth.
 
 - [Shape notes](context/foundation/shape-notes.md)
 - [PRD](context/foundation/prd.md)
+- [Wymagania biznesowe i traceability](context/foundation/business-requirements.md)
 - [Tech stack](context/foundation/tech-stack.md)
-- [Test plan](context/testing/test-plan.md)
+- [Wymagania techniczne](context/foundation/technical-requirements.md)
+- [Infrastruktura i granice sekretów](context/foundation/infrastructure.md)
+- [Roadmapa i dependency graph](context/foundation/roadmap.md)
+- [Plan testów](context/foundation/test-plan.md)
+- [Research, plan wdrożenia i bieżący postęp](context/changes/ai-concept-compass-mvp/plan.md)
+- [Specyfikacja API](context/changes/ai-concept-compass-mvp/specs/api.md)
+- [Specyfikacja bazy i RLS](context/changes/ai-concept-compass-mvp/specs/database.md)
+- [Specyfikacja UI](context/changes/ai-concept-compass-mvp/specs/ui.md)
+- [Plan deployu](context/deployment/deploy-plan.md)
 - [Audyt MVP](context/evidence/builder-mvp-check.md)
+- [Agent code review — runbook](context/team/reviewer-runbook.md)
 
 ## Jak AI wspierało proces
 

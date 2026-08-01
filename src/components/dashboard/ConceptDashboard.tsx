@@ -132,10 +132,11 @@ export default function ConceptDashboard() {
         </div>
         <button
           type="button"
+          disabled={busy}
           onClick={() => {
             setEditingConcept(null);
           }}
-          className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 font-bold text-white transition hover:bg-slate-800"
+          className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-5 py-3 font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Plus className="size-4" /> Dodaj pojęcie
         </button>
@@ -256,19 +257,21 @@ export default function ConceptDashboard() {
                   <div className="mt-3 flex justify-end gap-1 border-t border-slate-100 pt-3">
                     <button
                       type="button"
+                      disabled={busy}
                       onClick={() => {
                         setEditingConcept(concept);
                       }}
                       aria-label={`Edytuj ${concept.title}`}
-                      className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-950"
+                      className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Pencil className="size-4" />
                     </button>
                     <button
                       type="button"
+                      disabled={busy}
                       onClick={() => deleteConcept(concept)}
                       aria-label={`Usuń ${concept.title}`}
-                      className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-700"
+                      className="rounded-lg p-2 text-slate-500 hover:bg-rose-50 hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <Trash2 className="size-4" />
                     </button>

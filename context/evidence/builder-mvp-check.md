@@ -30,8 +30,9 @@ rekomendacji. `ConceptService.createReview()` utrwala obliczony wynik, a
 
 `context/testing/test-plan.md` nazywa ryzyko błędnego scoringu/rekomendacji.
 `src/lib/scoring.test.ts` obejmuje wszystkie wyniki, dwie kolejne poprawne
-odpowiedzi, overconfidence, przeterminowanie, clamp i ranking. 42 testy
-przechodzą, a scoring ma 100% branch coverage.
+odpowiedzi, overconfidence, przeterminowanie, clamp i ranking. 50 testów
+przechodzi lokalnie, 3 hosted RLS są pomijane bez konfiguracji, a scoring ma
+100% branch coverage.
 
 Ryzyko cross-boundary jest związane z
 `e2e/concept-review.spec.ts`; scenariusz jest gotowy, lecz jego realne wykonanie

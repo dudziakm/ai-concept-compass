@@ -55,7 +55,7 @@ describe("scoring", () => {
     ["correct", "partial", 7],
     ["correct", "correct", 14],
   ] satisfies [ReviewOutcome, ReviewOutcome | null, number][])(
-    "schedules %s after %i day(s)",
+    "schedules %s after previous %s in %i day(s)",
     (outcome, previousOutcome, expectedDays) => {
       expect(calculateNextReviewAt(outcome, previousOutcome, NOW).getTime()).toBe(
         NOW.getTime() + expectedDays * DAY_MS,
