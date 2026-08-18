@@ -1,7 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "github>dudziakm/dep-automation:js",
-    "github>dudziakm/dep-automation:automerge"
-  ]
+  "extends": ["github>dudziakm/dep-automation:js"]
 }
