@@ -22,7 +22,9 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - run: npm ci
+      - run: npm ci --ignore-scripts
+      - run: npm ci --ignore-scripts --prefix packages/code-reviewer
+      - run: npm rebuild better-sqlite3 --prefix packages/code-reviewer
       - run: npm run workflow:check
       - run: npm run astro -- sync
       - run: npm run lint
