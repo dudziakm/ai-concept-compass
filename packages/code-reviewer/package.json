@@ -16,7 +16,7 @@
     "eval:promptfoo": "npm run build:eval && PROMPTFOO_DISABLE_TELEMETRY=1 promptfoo eval --no-cache --config promptfooconfig.yaml"
   },
   "dependencies": {
-    "@openrouter/ai-sdk-provider": "3.0.0",
+    "@openrouter/ai-sdk-provider": "3.1.0",
     "ai": "7.0.107",
     "tsx": "4.23.13",
     "zod": "4.6.5"
