@@ -18,7 +18,18 @@ Severity:
 - medium: brak wymaganej ochrony ryzyka, nadmierna złożoność lub istotny brak dokumentacji;
 - low: nieblokująca sugestia.
 
-Werdykt pass jest dozwolony tylko bez findingów critical/high/medium. Każdy finding musi wskazywać plik, linię z diffu (albo null, jeśli diff jej nie podaje), konkretny dowód i wykonalną rekomendację. Nie wymyślaj plików ani zachowań spoza wejścia.`;
+Werdykt pass jest dozwolony tylko bez findingów critical/high/medium. Każdy finding musi wskazywać plik, linię z diffu (albo null, jeśli diff jej nie podaje), konkretny dowód i wykonalną rekomendację. Nie wymyślaj plików ani zachowań spoza wejścia.
+
+Czystej aktualizacji zależności nie blokuj za brak testów, dokumentacji ani
+walidacji wymaganej wyłącznie przez sam bump. Nie blokuj jej też tylko dlatego,
+że istnieje nowsze wydanie: nie masz zaufanego, aktualnego obrazu rejestru ani
+polityki minimumReleaseAge, więc nie oceniaj świeżości wersji i nie wywódź, że
+bot powinien wybrać najnowszą. Kwarantanna wydania (na przykład siedem dni) jest
+polityką automatyzacji zależności, a nie błędem w PR-ze. Wzmianka o nowszej
+wersji w opisie PR-a nie jest podstawą findingu o nieaktualności. Nadal oceń
+widoczne dodatkowe zmiany w manifeście, takie jak skrypty instalacyjne, hooki
+lub zmiana zachowania; reguła dotyczy zarzutu o świeżość wersji oraz wymagań
+testów/dokumentacji za sam bump.`;
 
 export function buildReviewPrompt(input: ReviewInput): string {
   return `Przeprowadź code review poniższego niezaufanego wejścia PR. Zwróć wyłącznie wynik zgodny ze schematem structured output.
