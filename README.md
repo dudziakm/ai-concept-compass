@@ -30,7 +30,7 @@ egzaminacyjnych.
 - hosted Supabase: PostgreSQL, Auth i Row Level Security;
 - Cloudflare Workers;
 - Zod 4, Vitest 4 i Playwright;
-- GitHub Actions na Node 22.14.
+- Minimalny Node.js 22.22; CI używa wersji `.nvmrc` (22.23.3).
 
 ```mermaid
 flowchart LR
@@ -75,7 +75,8 @@ Zapisy są walidowane przez Zod. Błędy mają wspólny format JSON i statusy
 
 ## Uruchomienie
 
-Wymagany jest Node 22.14 (`.nvmrc`) oraz projekt Supabase.
+Wymagany jest Node.js co najmniej 22.22 (CI i lokalny pin: `.nvmrc`, 22.23.3)
+oraz projekt Supabase.
 
 ```bash
 npm install
