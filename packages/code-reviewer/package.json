@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@openrouter/ai-sdk-provider": "3.1.0",
-    "ai": "7.0.159",
+    "ai": "7.0.163",
     "tsx": "4.23.15",
     "zod": "4.6.7"
   },
@@ -50,5 +50,5 @@
     "proxy-addr": "2.0.8",
     "source-map-js": "1.2.2"
   },
-  "packageManager": "npm@10.9.9"
+  "packageManager": "npm@10.9.10"
 }
