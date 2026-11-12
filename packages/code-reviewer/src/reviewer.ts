@@ -74,7 +74,7 @@ export const generateOpenRouterDecision: GenerateDecision = async ({ input, mode
   // Jedno generateText, bez tools i bez retry: dokładnie jedno wywołanie modelu.
   const result = await generateText({
     model: openrouter(model),
-    system: SYSTEM_PROMPT,
+    instructions: SYSTEM_PROMPT,
     prompt: buildReviewPrompt(input),
     output: Output.object({
       schema: ReviewDecisionSchema,
